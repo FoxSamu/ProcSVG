@@ -1,4 +1,21 @@
-package com.reffurence.badgegen
+/*
+ * Copyright (C) 2024 Samū
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package dev.runefox.procsvg
 
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -11,8 +28,8 @@ class ProcessorContext(
 
     /**
      * The list of mapped [NodeProcessor]s in the order they are applied. Unlike [processors], these are not inherited.
-     * These processors are always applied before [processors] and are generated from [ProcessorDSL.map] and
-     * [ProcessorDSL.where].
+     * These processors are always applied before [processors] and are generated from [ProcessorDSLModel.otherwise] and
+     * [ProcessorDSLModel.where].
      */
     val mappedProcessors: List<NodeProcessor>,
 
@@ -85,7 +102,7 @@ class ProcessorContext(
      * Forks the given context and builds a new context using the DSL.
      */
     inline fun fork(action: ProcessorDSLFunction): ProcessorContext {
-        return ProcessorDSL(this).apply(action).newContext()
+        return ProcessorDSLModel(this).apply(action).newContext()
     }
 
     /**
@@ -97,13 +114,13 @@ class ProcessorContext(
 }
 
 
-typealias ProcessorDSLFunction = ProcessorDSL.() -> Unit
+typealias ProcessorDSLFunction = ProcessorDSLModel.() -> Unit
 
 /**
  * The processor domain-specific language. Typically this is extended using extension functions, which add
- * [NodeProcessor]s through [add].
+ * [NodeProcessor]s through [process].
  */
-class ProcessorDSL(private val parent: ProcessorContext?) {
+class ProcessorDSLModel(private val parent: ProcessorContext?) {
 
     private val maps = mutableListOf<NodeProcessor>()
     private val processors = mutableListOf<NodeProcessor>()
@@ -112,7 +129,7 @@ class ProcessorDSL(private val parent: ProcessorContext?) {
     /**
      * Adds a [NodeProcessor].
      */
-    fun add(processor: NodeProcessor) {
+    fun process(processor: NodeProcessor) {
         processors += processor
     }
 
@@ -122,9 +139,10 @@ class ProcessorDSL(private val parent: ProcessorContext?) {
 
     /**
      * Maps the context by given DSL function. Any [NodeProcessor]s in this context must be inherited into the new
-     * child context for them to be applied.
+     * child context for them to be applied. An `otherwise` block can follow a bunch of `where` blocks as a kind of
+     * `else`, where the only purpose of any parent processors is to be inherited.
      */
-    fun map(mapper: ProcessorDSLFunction) =
+    fun otherwise(mapper: ProcessorDSLFunction = {}) =
         addMap {
             fork(mapper).applyProcessors(it)
             immediatelyStopProcessing()
@@ -134,9 +152,21 @@ class ProcessorDSL(private val parent: ProcessorContext?) {
      * Maps the context by given DSL function if the given [NodeFilter] matches the node. Any [NodeProcessor] added
      * to this context will not be applied to filtered nodes unless explicitly inherited.
      */
-    fun where(filter: NodeFilter, mapper: ProcessorDSLFunction) =
+    fun where(filter: NodeFilter, mapper: ProcessorDSLFunction = {}) =
         addMap {
             if (filter.appliesTo(it)) {
+                fork(mapper).applyProcessors(it)
+                immediatelyStopProcessing()
+            }
+        }
+
+    /**
+     * Maps the context by given DSL function if the given [Condition] is true. Any [NodeProcessor] added
+     * to this context will not be applied to filtered nodes unless explicitly inherited.
+     */
+    fun where(filter: Condition, mapper: ProcessorDSLFunction = {}) =
+        addMap {
+            if (filter.apply(this)) {
                 fork(mapper).applyProcessors(it)
                 immediatelyStopProcessing()
             }
@@ -149,10 +179,16 @@ class ProcessorDSL(private val parent: ProcessorContext?) {
         where(this, mapper)
 
     /**
+     * Equivalent to [where].
+     */
+    operator fun Condition.invoke(mapper: ProcessorDSLFunction) =
+        where(this, mapper)
+
+    /**
      * Inherits all the processors from the parent context into this context.
      */
     fun inherit() {
-        parent?.processors?.forEach(::add)
+        parent?.processors?.forEach(this::process)
     }
 
     /**

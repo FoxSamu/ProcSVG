@@ -1,4 +1,21 @@
-package com.reffurence.badgegen
+/*
+ * Copyright (C) 2024 Samū
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package dev.runefox.procsvg
 
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory
 import org.apache.batik.anim.dom.SVGDOMImplementation
@@ -27,14 +44,14 @@ import javax.xml.transform.stream.StreamResult
  *
  * To process a [Document] see [process].
  */
-fun context(mapper: ProcessorDSLFunction): ProcessorDSL {
-    return ProcessorDSL(null).apply(mapper)
+fun processor(mapper: ProcessorDSLFunction): ProcessorDSLModel {
+    return ProcessorDSLModel(null).apply(mapper)
 }
 
 /**
  * Processes given [Document], modifying this document instance directly. If that's not desired, make a [copy] first.
  */
-fun Document.process(context: ProcessorDSL, properties: PropertyProvider = PropertyProvider.empty) {
+fun Document.process(context: ProcessorDSLModel, properties: PropertyProvider = PropertyProvider.empty) {
     context.newContext(properties).applyProcessors(this)
 }
 

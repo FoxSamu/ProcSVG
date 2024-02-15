@@ -1,4 +1,21 @@
-package com.reffurence.badgegen
+/*
+ * Copyright (C) 2024 Samū
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package dev.runefox.procsvg
 
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -106,15 +123,15 @@ infix fun NodeFilter.or(other: NodeFilter) =
 /**
  * Applies a processor that simply removes the node and its children from the document.
  */
-fun ProcessorDSL.removeNode() =
-    add { it.parentNode.removeChild(it) }
+fun ProcessorDSLModel.removeNode() =
+    process { it.parentNode.removeChild(it) }
 
 /**
  * Applies a processor that replaces the children of the node with a simple text node with given text.
  * @param text A [Property] that defines the new text content of this node.
  */
-fun ProcessorDSL.setTextContent(text: Property) {
-    add { it.textContent = this[text] }
+fun ProcessorDSLModel.setTextContent(text: Property) {
+    process { it.textContent = this[text] }
     stopTraverse()
 }
 
@@ -124,8 +141,8 @@ fun ProcessorDSL.setTextContent(text: Property) {
  * @param attribute A [Property] that defines the name of the attribute to change.
  * @param value A [Property] that defines the new attribute value.
  */
-fun ProcessorDSL.setAttr(attribute: Property, value: Property) =
-    add {
+fun ProcessorDSLModel.setAttr(attribute: Property, value: Property) =
+    process {
         if (it is Element) {
             it.setAttribute(this[attribute], this[value])
         }
@@ -135,8 +152,8 @@ fun ProcessorDSL.setAttr(attribute: Property, value: Property) =
  * Applies a processor that removes an attribute from this node. Only targets nodes of type [Element].
  * @param attribute A [Property] that defines the name of the attribute to remove.
  */
-fun ProcessorDSL.removeAttr(attribute: Property) =
-    add {
+fun ProcessorDSLModel.removeAttr(attribute: Property) =
+    process {
         if (it is Element) {
             it.removeAttribute(this[attribute])
         }
@@ -148,8 +165,8 @@ fun ProcessorDSL.removeAttr(attribute: Property) =
  * @param property A [Property] that defines the name of the property to change.
  * @param value A [Property] that defines the new property value.
  */
-fun ProcessorDSL.setCss(property: Property, value: Property) =
-    add {
+fun ProcessorDSLModel.setCss(property: Property, value: Property) =
+    process {
         if (it is SVGStylable) {
             it.style.setProperty(this[property], this[value], "")
         }
@@ -161,8 +178,8 @@ fun ProcessorDSL.setCss(property: Property, value: Property) =
  * @param attribute The name of the attribute to change.
  * @param value A [Property] that defines the new attribute value.
  */
-fun ProcessorDSL.setAttr(attribute: String, value: Property) =
-    add {
+fun ProcessorDSLModel.setAttr(attribute: String, value: Property) =
+    process {
         if (it is Element) {
             it.setAttribute(attribute, this[value])
         }
@@ -172,8 +189,8 @@ fun ProcessorDSL.setAttr(attribute: String, value: Property) =
  * Applies a processor that removes an attribute from this node. Only targets nodes of type [Element].
  * @param attribute The name of the attribute to remove.
  */
-fun ProcessorDSL.removeAttr(attribute: String) =
-    add {
+fun ProcessorDSLModel.removeAttr(attribute: String) =
+    process {
         if (it is Element) {
             it.removeAttribute(attribute)
         }
@@ -186,8 +203,8 @@ fun ProcessorDSL.removeAttr(attribute: String) =
  * @param property The name of the property to change.
  * @param value A [Property] that defines the new property value.
  */
-fun ProcessorDSL.setCss(property: String, value: Property) =
-    add {
+fun ProcessorDSLModel.setCss(property: String, value: Property) =
+    process {
         if (it is SVGStylable) {
             it.style.setProperty(property, this[value], "")
         }
@@ -198,7 +215,7 @@ fun ProcessorDSL.setCss(property: String, value: Property) =
  * Applies a processor that simply prints the short Java class name of the [Node] instance. This could be used for
  * debugging.
  */
-fun ProcessorDSL.printNodeType() =
-    add {
+fun ProcessorDSLModel.printNodeType() =
+    process {
         println(it::class.simpleName)
     }

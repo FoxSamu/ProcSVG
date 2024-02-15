@@ -1,4 +1,21 @@
-package com.reffurence.badgegen
+/*
+ * Copyright (C) 2024 Samū
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package dev.runefox.procsvg
 
 import org.w3c.dom.svg.SVGImageElement
 import java.io.FileInputStream
@@ -26,12 +43,12 @@ private fun toDataString(stream: InputStream, media: String = "image/png"): Stri
  * @param fileOpener A function that locates a file name that came out of the property from [filename] and opens it as
  * an [InputStream].
  */
-fun ProcessorDSL.embedImageHref(
+fun ProcessorDSLModel.embedImageHref(
     filename: Property,
     media: Property = literally("image/png"),
     fileOpener: (String) -> InputStream = { FileInputStream(it) }
 ) {
-    add {
+    process {
         if (it is SVGImageElement) {
             it.href.baseVal = toDataString(fileOpener(this[filename]), this[media])
         }

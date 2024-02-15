@@ -1,11 +1,28 @@
-package com.reffurence.badgegen
+/*
+ * Copyright (C) 2024 Samū
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package dev.runefox.procsvg
 
 import org.w3c.dom.svg.SVGStylable
 import java.io.FileReader
 import java.io.FileWriter
 
 fun main() {
-    val ctx = context {
+    val ctx = processor {
         // Text on badge
         (tagIs("text") and idIs("subtitle")) {
             setTextContent(literally("Funny convention"))
@@ -32,11 +49,11 @@ fun main() {
 
         // Avatar
         (idIs("avatar")) {
-            embedImageHref(literally("logo.png"))
+            embedImageHref(literally("testfiles/logo.png"))
         }
     }
 
-    val document = FileReader("badge5-base.svg").use {
+    val document = FileReader("testfiles/base.svg").use {
         readDocument(it)
     }
 
@@ -45,7 +62,7 @@ fun main() {
     copy.appendChild(copy.importNode(document.documentElement, true))
     copy.process(ctx)
 
-    FileWriter("modified.svg").use {
+    FileWriter("testfiles/modified.svg").use {
         copy.write(it)
     }
 }
