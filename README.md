@@ -1,4 +1,4 @@
-# A SVG processor (version 0.1)
+# A Kotlin-based SVG processor (version 0.1)
 
 This is a piece of software that can be used to transform SVG files. It uses a Kotlin DSL (domain-specific language) to define how a SVG file has to be transformed.
 
