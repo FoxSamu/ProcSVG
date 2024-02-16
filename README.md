@@ -8,6 +8,7 @@ The tool builds on top of the W3C DOM API and Apache Batik and allows you to str
 - Exporting PNG files
 - More built in processors
 - Unit testing
+- Distribution as application/library
 
 # Usage
 
